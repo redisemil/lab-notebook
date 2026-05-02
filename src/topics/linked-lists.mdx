@@ -1,0 +1,61 @@
+import { LinkedListDualView } from '../components/widgets/LinkedListDualView';
+
+export const meta = {
+  title: "Linked lists",
+  date: "2026-05-02",
+  status: "clicked",
+  category: ["Computer Science", "Data Structures"],
+  tags: ["memory", "pointers"],
+  excerpt: "Why random access is O(n), why cache locality is bad, and when you actually want one.",
+};
+
+# Linked lists
+
+## Mental model
+
+Nodes scattered at unrelated memory addresses, each holding a value and a pointer to the next node. The "list" is a convention imposed by reading those chained pointers in order — there is no list anywhere in memory, only nodes, pointers, and a `head` reference.
+
+The common diagram (boxes adjacent in a row with arrows between) is misleading because it implies physical adjacency. Arrays and linked lists differ precisely in *not* being physically adjacent, and most properties of linked lists fall out of that single fact.
+
+<LinkedListDualView />
+
+Re-scrambling the nodes' physical addresses leaves the logical list unchanged. Order lives in the pointers, not in the memory layout. Once that picture is in place, the costs stop needing to be memorized.
+
+## Properties
+
+**Random access: O(n).** No arithmetic takes a process from "the list" to "node 5." The only operation available is `next` on a node already held. Reaching node 5 means following five pointers; reaching node 5,000 means following five thousand. Compare to an array: `arr[5000]` is one base + offset. The cost difference is structural, not a quirk of implementation.
+
+**Insertion at the head: O(1).** Two pointer writes — the new node's `next` becomes the old head address, and `head` becomes the new node's address. Independent of list size.
+
+**Insertion at the tail: O(n)** (without a tail pointer). Finding the tail requires walking the list. Same cost basis as random access.
+
+**Cache locality: poor.** When the CPU reads a node's address, the cache prefetches surrounding bytes. For an array, those neighbors are the next elements. For a linked list, they're whatever else happened to be allocated nearby — unrelated to where the next node lives. Every `next` traversal is potentially a cache miss (~100+ cycles on modern hardware). This is why a `Vec` of a million elements wildly outperforms a `LinkedList` of a million: same algorithmic complexity, different access patterns hitting different physics.
+
+## When to use one
+
+Narrower than textbooks suggest.
+
+**Intrusive lists.** When the list node *is* the object — `next` and `prev` pointers built into the data structure itself. Common in C kernels (Linux uses thousands). No separate node allocation, no per-node indirection, and the cache penalty largely vanishes because the walk is over real objects rather than skinny wrapper nodes.
+
+**Free lists in pool allocators.** Free slots in a fixed-size pool form a linked list, with the `next` pointer living *inside* the free slot's own memory. Allocation is "pop head," free is "push head" — both O(1), no metadata, no fragmentation. Used everywhere in embedded systems and game engines.
+
+**O(1) splice.** Cutting a chunk out of one list and pasting it into another in constant time, without copying. Linked lists are unique here. Most workloads don't need it; when they do, nothing else does it.
+
+**Stable addresses across mutations.** If external code holds pointers to elements, those pointers stay valid after inserts or deletes elsewhere in the list. A `Vec` reallocates and invalidates pointers; a `LinkedList` doesn't.
+
+For most other use cases: prefer `Vec` / `VecDeque` / array. Rust's standard library docs literally say so on `LinkedList`.
+
+## Open questions
+
+- Intrusive linked lists in C kernels — `container_of` macro pattern.
+- Pointer-to-pointer (`**`) version of insertion code; removes head-of-list special cases.
+- Lock-free linked lists (Treiber stacks, Harris's algorithm).
+- End-to-end slab allocator implementation.
+
+## References
+
+- CLRS, chapter 10 — operations and proofs.
+- Bjarne Stroustrup, *Why you should avoid linked lists* (YouTube) — cache argument with benchmarks.
+- Linus Torvalds, "good taste" interview clip — pointer-to-pointer riff.
+- Rust standard library, `std::collections::LinkedList` docs — useful warning paragraph.
+- Ulrich Drepper, *What every programmer should know about memory* — cache locality in depth.
