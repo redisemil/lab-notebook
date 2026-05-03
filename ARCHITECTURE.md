@@ -1,10 +1,10 @@
 # Architecture
 
-How the pieces of this notebook fit together. Read `CLAUDE.md` first for *why* the system is shaped this way; this file is *how*.
+How the pieces of this notebook fit together. Read `CLAUDE.md` first for _why_ the system is shaped this way; this file is _how_.
 
 ## Overview
 
-The notebook is a Vite + React + MDX SPA with a single source of truth: the `src/topics/*.mdx` directory. Everything else — the index page, the sidebar tree, search, breadcrumbs — is *derived* from those files at build time. Adding a topic is dropping a file. There is no registry, no config, no database.
+The notebook is a Vite + React + MDX SPA with a single source of truth: the `src/topics/*.mdx` directory. Everything else — the index page, the sidebar tree, search, breadcrumbs — is _derived_ from those files at build time. Adding a topic is dropping a file. There is no registry, no config, no database.
 
 ```
 src/topics/*.mdx          (the only thing the author edits)
@@ -28,26 +28,25 @@ Everything hinges on this shape. It's declared in `src/lib/topics.ts` and mirror
 
 ```ts
 type TopicMeta = {
-  title: string;        // required
-  date: string;         // required, "YYYY-MM-DD" — used for sorting
-  status?: string;      // free-form: "in progress" / "clicked" / "abandoned" / etc.
-  category?: string[];  // path: ["Computer Science", "Data Structures"]
-                        //   defaults to ["Uncategorized"] if omitted
-  tags?: string[];      // free-form, used by search
-  excerpt?: string;     // optional one-liner shown on index cards
+  title: string; // required
+  date: string; // required, "YYYY-MM-DD" — used for sorting
+  category?: string[]; // path: ["Computer Science", "Data Structures"]
+  //   defaults to ["Uncategorized"] if omitted
+  tags?: string[]; // free-form, used by search
+  excerpt?: string; // optional one-liner shown on index cards
 };
 ```
 
 Where each field is consumed:
 
-| Field | Sidebar | Index | TopicPage | Search |
-|-------|---------|-------|-----------|--------|
-| `title` | yes | yes | yes (h1) | yes (haystack) |
-| `date` | — | yes | yes | — |
-| `status` | — | yes | yes | — |
+| Field      | Sidebar         | Index          | TopicPage        | Search         |
+| ---------- | --------------- | -------------- | ---------------- | -------------- |
+| `title`    | yes             | yes            | yes (h1)         | yes (haystack) |
+| `date`     | —               | yes            | yes              | —              |
+
 | `category` | yes (tree path) | yes (grouping) | yes (breadcrumb) | yes (haystack) |
-| `tags` | — | yes | yes | yes (haystack) |
-| `excerpt` | — | yes (recent) | — | yes (haystack) |
+| `tags`     | —               | yes            | yes              | yes (haystack) |
+| `excerpt`  | —               | yes (recent)   | —                | yes (haystack) |
 
 If you change `TopicMeta`, update both `src/lib/topics.ts` and `src/mdx.d.ts` together — they're separately authoritative.
 
@@ -147,7 +146,7 @@ These are written in code but not narrated anywhere else.
 - `prose` for topic content (applied by `TopicPage`). `not-prose` for widget roots.
 - Topic slugs are derived from filenames (`linked-lists.mdx` → `/topics/linked-lists`). Use kebab-case filenames.
 - Date format: `YYYY-MM-DD`. Strict — sorting compares as strings.
-- Status vocabulary is free-form but in practice: `"in progress"`, `"clicked"`, `"abandoned"`, `"draft"`. Pick one and be consistent.
+
 - Category arrays go from broadest to most specific: `["Computer Science", "Data Structures"]`, not the other way.
 - Widget keys (`marker id`, etc.) need to be unique across the app — prefix with the widget name. `LinkedListDualView` uses `ll-arr-*` for its arrowheads.
 
@@ -160,15 +159,3 @@ These are written in code but not narrated anywhere else.
 - `prose` styles tables, code blocks, lists, blockquotes, etc. inside topics. Widgets use `not-prose` to opt out — but if a widget contains a stray `<p>` or `<table>` outside a `not-prose` boundary, it'll get prose styling. Rule: every widget's root has `not-prose`.
 - React StrictMode double-invokes `useState` initializers in dev. Widgets that pick random initial state (like the linked-list widget) will produce two random initial states on mount in dev; the first is discarded. Production behaves normally.
 - MDX files can import any React component, not just widgets. If you want shared inline components (callouts, asides, etc.), put them in `src/components/mdx/` and import them per file.
-
-## Things deliberately not built
-
-These are tempting but absent on purpose. Add them when you've felt the pain, not before.
-
-- **Tag pages.** Listing all topics with a given tag would be a 30-line route. Not built because the sidebar tree + search already covers the navigation use cases.
-- **Full-text search.** Substring matching across title/tags/category/excerpt is enough until you have many dozens of topics. Swap to MiniSearch via the recipe above when it stops being enough.
-- **A widget framework.** Each widget is a hand-written component. There's no `<Slider>` primitive, no `<DualView>` template. Premature abstraction across 1–2 widgets produces the wrong abstraction.
-- **A CMS or admin UI.** Authoring is "edit the MDX file." This is the right abstraction for a personal notebook with one author.
-- **Static site generation.** Vite's SPA build is enough. SSG (with the `vite-plugin-ssg` family or a switch to Astro/Next) buys per-page HTML and SEO; defer until you actually have an SEO use case.
-- **Mobile sidebar.** The sidebar is hidden below 768px. A hamburger toggle is cheap to add (one component, one piece of state) but not built yet.
-- **Dark mode.** See recipe above. Defer until you have the widgets that need to be made theme-aware.

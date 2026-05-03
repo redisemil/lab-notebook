@@ -1,0 +1,51 @@
+import { OhmsExplorer } from '../components/widgets/OhmsExplorer';
+import { OhmsLawPredict } from '../components/widgets/OhmsLawPredict';
+
+export const meta = {
+  title: "Ohm's law",
+  date: "2026-05-03",
+
+  category: ["Electronics", "Circuit Fundamentals"],
+  tags: ["voltage", "current", "resistance", "power"],
+  excerpt: "V = IR — the constraint that binds voltage, current, and resistance.",
+};
+
+# Ohm's law
+
+**V = IR.** Three quantities, one constraint. Fix any two; the third is forced.
+
+<OhmsExplorer />
+
+The dots are current — their speed shows how much charge flows per second. The graph plots V against I: a straight line from the origin with slope 1/R. Slide voltage and the operating point moves along the line. Slide resistance and the line pivots — steeper means lower resistance, more current per volt.
+
+That straight line *is* the definition of an ohmic material. A component whose V–I curve bends (a diode, a thermistor) is non-ohmic: V = IR still holds at each instant, but R shifts with conditions.
+
+---
+
+Given two of V, I, R — predict the third:
+
+<OhmsLawPredict />
+
+---
+
+## Power
+
+P = IV. Substitute V = IR: **P = I²R**. Substitute I = V/R: **P = V²/R**.
+
+The square is where circuits bite. Double current through a fixed resistor and power quadruples. This is why short circuits destroy things: halving R at fixed V doubles I but quadruples P.
+
+## Scope
+
+**Ohmic:** metals at stable temperature, carbon resistors within rated power, most passive components in their linear range.
+
+**Non-ohmic:** diodes, LEDs, thermistors, filament bulbs. R changes with operating conditions.
+
+**AC:** generalizes to V = IZ where Z is complex impedance. Same constraint shape, complex arithmetic.
+
+**Kirchhoff's laws** compose multiple Ohm's law constraints into a system — KVL (voltages around loops sum to zero) and KCL (currents at nodes sum to zero).
+
+## References
+
+- Horowitz & Hill, *The Art of Electronics*, chapter 1
+- Griffiths, *Introduction to Electrodynamics* — J = σE derivation
+- Agarwal & Lang, *Foundations of Analog and Digital Electronic Circuits*

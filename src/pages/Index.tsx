@@ -94,7 +94,7 @@ function TopicRow({ topic, compact = false }: { topic: Topic; compact?: boolean 
           <p className="text-sm text-slate-600 mt-1 leading-relaxed">{topic.meta.excerpt}</p>
         )}
         <p className="text-[11px] text-slate-500 mt-1">
-          {topic.meta.date} · {topic.meta.status ?? 'in progress'}
+          {topic.meta.date}
           {topic.meta.tags && topic.meta.tags.length > 0 ? ` · ${topic.meta.tags.join(' · ')}` : ''}
         </p>
       </Link>

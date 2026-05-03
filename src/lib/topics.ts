@@ -3,7 +3,6 @@ import type { ComponentType } from 'react';
 export type TopicMeta = {
   title: string;
   date: string;
-  status?: string;
   tags?: string[];
   category?: string[];
   excerpt?: string;

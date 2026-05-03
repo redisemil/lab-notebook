@@ -24,7 +24,7 @@ export default function TopicPage() {
       <div className="mb-8 not-prose">
         <Breadcrumb category={meta.category} />
         <p className="text-xs text-slate-500 uppercase tracking-wide mb-1 mt-3">
-          {meta.date} · {meta.status ?? 'in progress'}
+          {meta.date}
         </p>
         {meta.tags && meta.tags.length > 0 && (
           <p className="text-xs text-slate-500">{meta.tags.join(' · ')}</p>
